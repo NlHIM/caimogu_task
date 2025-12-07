@@ -88,7 +88,7 @@ public class App
                 log.error("评价失败 "+id);
             }
             if (trueFlag == 3) {
-                return;
+                break;
             }
 
         }
