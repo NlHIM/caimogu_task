@@ -164,7 +164,7 @@ public class App {
                 replyGroup = CaiMoGuH5Help.getReplyGroup();
             }
             checkIds = replyGroup.get(type);
-            if (checkIds.isEmpty()) {
+            if (checkIds==null||checkIds.isEmpty()) {
                 return new HashSet<>();
             }
             log.error("{}数据同步",fileName);
