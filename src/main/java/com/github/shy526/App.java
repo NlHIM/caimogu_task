@@ -7,11 +7,9 @@ import com.github.shy526.config.Config;
 import com.github.shy526.github.GithubHelp;
 import com.github.shy526.vo.GithubInfo;
 import com.github.shy526.vo.UserInfo;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -60,11 +58,14 @@ public class App {
         log.error("当前用户:{},影响力:{}", userInfo.getNickname(), userInfo.getPoint());
 
 
+        String suffix = ".txt";
         String gameIdsFileName = "gameIds.txt";
-        String acIdsFileName = "acIds.txt";
-        String postIdsFileName = "postIds.txt";
-        String runFileName = "run.txt";
-        String gameCommentFileName = "gameComment.txt";
+        String acIdsFileName = "acIds-" + userInfo.getUid() + suffix;
+        String postIdsFileName = "postIds-" + userInfo.getUid() + suffix;
+        String gameCommentFileName = "gameComment-" + userInfo.getUid() + suffix;
+
+
+        deleteGithubFile(gameIdsFileName);
 
         LocalDate current = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -156,9 +157,34 @@ public class App {
 
 
         log.error("本次任务共获取影响力:{}", CaiMoGuH5Help.getPoint() - point);
-        HashSet<String> temp = new HashSet<>();
-        temp.add(formatter.format(current));
-        GithubHelp.createOrUpdateFile(String.join("\n", temp), runFileName, ownerRepo, githubApiToken);
+    }
+
+    /**
+     * 清理非本用户的文件
+     * @param gameIdsFileName
+     */
+    private static void deleteGithubFile(String gameIdsFileName) {
+        GithubInfo githubInfo = Config.INSTANCE.GithubInfo;
+        UserInfo userInfo = Config.INSTANCE.userInfo;
+        String uid = userInfo.getUid();
+        String ownerRepo = githubInfo.getOwnerRepo();
+        String githubApiToken = githubInfo.getGithubApiToken();
+        List<String> files = GithubHelp.getListFileName(ownerRepo, githubApiToken, "src/main/resources");
+        for (String item : files) {
+            if (!item.endsWith(".txt") || item.equals(gameIdsFileName)) {
+                continue;
+            }
+            String[] split = item.split("-");
+            if (split.length < 2) {
+                GithubHelp.deleteFile(ownerRepo, githubApiToken, item);
+                log.error("delete  {}", item);
+                continue;
+            }
+            if (split[1].equals(uid)) {
+                GithubHelp.deleteFile(ownerRepo, githubApiToken, item);
+                log.error("delete  {}", item);
+            }
+        }
     }
 
     private static Set<String> checkAcFileName(String fileName, Map<String, Set<String>> replyGroup, String type) {

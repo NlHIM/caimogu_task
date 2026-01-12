@@ -6,7 +6,6 @@ import com.github.shy526.config.Config;
 import com.github.shy526.factory.OkHttpClientFactory;
 import com.github.shy526.vo.PageModel;
 import com.github.shy526.vo.UserInfo;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.apache.commons.codec.binary.Base64;
@@ -19,7 +18,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Supplier;
@@ -111,7 +109,7 @@ public class CaiMoGuH5Help {
                     pageModel.setNextKey(data.getString("nextKey"));
                     return pageModel;
                 } else if (code == 10002) {
-                    return retry(url,"getGameCommentPage", () -> getGameCommentPage(gameId, order, type, page));
+                    return retry(url, "getGameCommentPage", () -> getGameCommentPage(gameId, order, type, page));
                 }
 
             }
@@ -155,7 +153,7 @@ public class CaiMoGuH5Help {
                 int code = result.getIntValue("code");
                 if (code == 10002) {
 
-                    return retry(url,"acGameCommentReply", () -> acGameCommentReply(msgId, content));
+                    return retry(url, "acGameCommentReply", () -> acGameCommentReply(msgId, content));
 
                 }
 
@@ -168,7 +166,7 @@ public class CaiMoGuH5Help {
     }
 
 
-    private static <T> T retry(String url,String key, Supplier<T> supplier) {
+    private static <T> T retry(String url, String key, Supplier<T> supplier) {
         try {
             Thread.sleep(1500);
         } catch (InterruptedException ignored) {
@@ -177,7 +175,7 @@ public class CaiMoGuH5Help {
         reNum++;
         ReNumMap.put(key, reNum);
         if (reNum <= 3) {
-            log.error("签名错误 {}=>{} {}", key, reNum,url);
+            log.error("签名错误 {}=>{} {}", key, reNum, url);
             T temp = supplier.get();
             ReNumMap.remove(key);
             return temp;
@@ -227,7 +225,7 @@ public class CaiMoGuH5Help {
                 JSONObject result = JSON.parseObject(response.body().string());
                 int code = result.getIntValue("code");
                 if (code == 10002) {
-                    return retry(url,"acGameScore", () -> acGameScore(gameId, content, score, process));
+                    return retry(url, "acGameScore", () -> acGameScore(gameId, content, score, process));
                 }
                 return code;
 
@@ -338,7 +336,7 @@ public class CaiMoGuH5Help {
                     pageModel.setNextKey(data.getString("nextKey"));
                     return pageModel;
                 } else if (code == 10002) {
-                    return retry(url,"getCommentPage", () -> getCommentPage(detailId, order, page));
+                    return retry(url, "getCommentPage", () -> getCommentPage(detailId, order, page));
 
                 }
 
@@ -379,7 +377,7 @@ public class CaiMoGuH5Help {
                     pageModel.setData(data.getList("list", JSONObject.class));
                     return pageModel;
                 } else if (code == 10002) {
-                    return retry(url,"getGamePage", () -> getGamePage(sort, page));
+                    return retry(url, "getGamePage", () -> getGamePage(sort, page));
 
                 }
 
@@ -418,7 +416,7 @@ public class CaiMoGuH5Help {
                 if (code == 0) {
                     return result.getList("data", JSONObject.class);
                 } else if (code == 10002) {
-                    return retry(url,"getDetailPage", () -> getDetailPage(id, type, page));
+                    return retry(url, "getDetailPage", () -> getDetailPage(id, type, page));
 
                 }
 
@@ -523,7 +521,7 @@ public class CaiMoGuH5Help {
                     JSONObject data = result.getJSONObject("data");
                     return true;
                 } else if (code == 10002) {
-                    return retry(url,"acComment", () -> acComment(pId, content));
+                    return retry(url, "acComment", () -> acComment(pId, content));
 
                 }
             }
@@ -564,7 +562,7 @@ public class CaiMoGuH5Help {
                     pageModel.setNextKey(data.getString("nextKey"));
                     return pageModel;
                 } else if (code == 10002) {
-                    return retry(url,"getReplyList", () -> getReplyList(nextKey));
+                    return retry(url, "getReplyList", () -> getReplyList(nextKey));
 
                 }
             }
@@ -604,7 +602,7 @@ public class CaiMoGuH5Help {
                     Config.INSTANCE.userInfo.setPoint(point);
                     return point;
                 } else if (code == 10002) {
-                    return retry(url,"getPoint", () -> getPoint());
+                    return retry(url, "getPoint", () -> getPoint());
 
                 }
 
@@ -661,7 +659,7 @@ public class CaiMoGuH5Help {
                     userInfo.setNickname(data.getString("nickname"));
                     Config.INSTANCE.userInfo = userInfo;
                 } else if (code == 10002) {
-                    retry(url,"loginH5", () -> {
+                    retry(url, "loginH5", () -> {
                         loginH5(username, password);
                         return 1;
                     });
@@ -753,8 +751,8 @@ public class CaiMoGuH5Help {
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
             byte[] encryptBytes = cipher.doFinal(val.getBytes(StandardCharsets.UTF_8));
             String aesBase64 = Base64.encodeBase64String(encryptBytes);
-            if (aesBase64.startsWith("+")){
-                aesBase64=aesBase64.replace("+", "%2B");
+            if (aesBase64.startsWith("+")) {
+                aesBase64 = aesBase64.replace("+", "%2B");
             }
             return URLEncoder.encode(aesBase64, StandardCharsets.UTF_8.name());
 
